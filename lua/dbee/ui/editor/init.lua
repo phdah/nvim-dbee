@@ -45,7 +45,6 @@ function EditorUI:new(handler, result, opts)
     mappings = opts.mappings,
     window_options = vim.tbl_extend("force", {}, opts.window_options or {}),
     buffer_options = vim.tbl_extend("force", {
-      buflisted = false,
       swapfile = false,
       filetype = "sql",
     }, opts.buffer_options or {}),
@@ -459,9 +458,6 @@ end
 ---@param winid integer
 function EditorUI:show(winid)
   self.winid = winid
-
-  -- open current note
-  self:display_note(self.current_note_id)
 
   -- configure window options (needs to be set after setting the buffer to window)
   common.configure_window_options(winid, self.window_options)
