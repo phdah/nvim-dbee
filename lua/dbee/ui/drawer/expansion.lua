@@ -3,7 +3,7 @@ local M = {}
 -- applies the expansion on new nodes
 ---@param tree NuiTree tree to apply the expansion map to
 ---@param expansion table<string, boolean> expansion map ( id:is_expanded mapping )
-function M.set(tree, expansion)
+function M.set(tree, expansion, refresh)
   -- first pass: load lazy_loaded children
   for id, t in pairs(expansion) do
     if t then
@@ -11,7 +11,7 @@ function M.set(tree, expansion)
       if node then
         -- if function for getting layout exist, call it
         if type(node.lazy_children) == "function" then
-          tree:set_nodes(node.lazy_children(), node.id)
+          tree:set_nodes(node.lazy_children(refresh), node.id)
         end
       end
     end

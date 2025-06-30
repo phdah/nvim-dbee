@@ -123,9 +123,10 @@ end
 
 ---Get database structure of a connection.
 ---@param id connection_id
+---@param refresh boolean
 ---@return DBStructure[]
-function core.connection_get_structure(id)
-  return state.handler():connection_get_structure(id)
+function core.connection_get_structure(id, refresh)
+  return state.handler():connection_get_structure(id, refresh)
 end
 
 ---Get columns of a table

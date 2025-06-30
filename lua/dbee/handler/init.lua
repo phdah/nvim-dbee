@@ -217,12 +217,45 @@ function Handler:connection_execute(id, query)
   return vim.fn.DbeeConnectionExecute(id, query)
 end
 
+---@param structPath string
+---@return boolean, table
+local function get_stored_db_object(structPath)
+  local chunk, _ = loadfile(structPath)
+  local ok = false
+  local ret = {}
+  if chunk then
+    ok, ret = pcall(chunk)
+  end
+  return ok, ret
+end
+
+---@param structPath string
+---@param ret table
+local function save_stored_db_object(structPath, ret)
+    local dir = structPath:match("(.*/)")
+    vim.fn.mkdir(dir, "p")
+    local file = io.open(structPath, "w")
+    if file ~= nil then
+      file:write("return ", vim.inspect(ret))
+      file:close()
+    end
+end
+
+
 ---@param id connection_id
+---@param refresh boolean
 ---@return DBStructure[]
-function Handler:connection_get_structure(id)
-  local ret = vim.fn.DbeeConnectionGetStructure(id)
-  if not ret or ret == vim.NIL then
-    return {}
+function Handler:connection_get_structure(id, refresh)
+  local current_db, _ = self:connection_list_databases(id)
+  local conn = self:get_current_connection()
+  local structPath = vim.fn.stdpath("state") .. "/dbee/structures/" .. conn.name .. "/" .. current_db .. "/structure" .. ".lua"
+  local ok, ret = get_stored_db_object(structPath)
+  if not ok or refresh then
+    ret = vim.fn.DbeeConnectionGetStructure(id)
+    if not ret or ret == vim.NIL then
+      ret = {}
+    end
+    save_stored_db_object(structPath, ret)
   end
   return ret
 end
