@@ -16,7 +16,7 @@ local expansion = require("dbee.ui.drawer.expansion")
 ---@field action_1? drawer_node_action primary action if function takes a second selection parameter, pick_items get picked before the call
 ---@field action_2? drawer_node_action secondary action if function takes a second selection parameter, pick_items get picked before the call
 ---@field action_3? drawer_node_action tertiary action if function takes a second selection parameter, pick_items get picked before the call
----@field lazy_children? fun():DrawerUINode[] lazy loaded child nodes
+---@field lazy_children? fun(refresh):DrawerUINode[] lazy loaded child nodes
 
 ---@class DrawerUI
 ---@field private tree NuiTree
@@ -205,7 +205,7 @@ function DrawerUI:get_actions()
 
     -- if function for getting layout exist, call it
     if not expanded and type(node.lazy_children) == "function" then
-      self.tree:set_nodes(node.lazy_children(), node.id)
+      self.tree:set_nodes(node.lazy_children(false), node.id)
     end
 
     node:expand()
@@ -221,7 +221,7 @@ function DrawerUI:get_actions()
     end
 
     action(function()
-      self:refresh()
+      self:refresh(false)
     end, function(opts)
       opts = opts or {}
       menu.select {
@@ -245,7 +245,7 @@ function DrawerUI:get_actions()
 
   return {
     refresh = function()
-      self:refresh()
+      self:refresh(true)
     end,
     action_1 = function()
       local node = self.tree:get_node() --[[@as DrawerUINode]]
@@ -307,7 +307,7 @@ function DrawerUI:do_action(action)
 end
 
 ---Refreshes the tree.
-function DrawerUI:refresh()
+function DrawerUI:refresh(load)
   -- assemble tree layout
   ---@type DrawerUINode[]
   local nodes = {}
@@ -329,7 +329,7 @@ function DrawerUI:refresh()
 
   local exp = expansion.get(self.tree)
   self.tree:set_nodes(nodes)
-  expansion.set(self.tree, exp)
+  expansion.set(self.tree, exp, load)
 
   self.tree:render()
 end
@@ -344,7 +344,7 @@ function DrawerUI:show(winid)
   -- configure window options (needs to be set after setting the buffer to window)
   common.configure_window_options(self.winid, self.window_options)
 
-  self:refresh()
+  self:refresh(false)
 end
 
 return DrawerUI

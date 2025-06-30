@@ -28,8 +28,9 @@ end
 ---@param handler Handler
 ---@param conn ConnectionParams
 ---@param result ResultUI
+---@param refresh boolean
 ---@return DrawerUINode[]
-local function connection_nodes(handler, conn, result)
+local function connection_nodes(handler, conn, result, refresh)
   ---@param structs DBStructure[]
   ---@param parent_id string
   ---@return DrawerUINode[]
@@ -88,11 +89,13 @@ local function connection_nodes(handler, conn, result)
     return nodes
   end
 
+  -- get database info
+  local current_db, available_dbs = handler:connection_list_databases(conn.id) -- Make it persistant HERE
+
   -- recursively parse structure to drawer nodes
-  local nodes = to_tree_nodes(handler:connection_get_structure(conn.id), conn.id)
+  local nodes = to_tree_nodes(handler:connection_get_structure(conn, current_db, refresh), conn.id)
 
   -- database switching
-  local current_db, available_dbs = handler:connection_list_databases(conn.id)
   if current_db ~= "" and #available_dbs > 0 then
     local ly = NuiTree.Node {
       id = conn.id .. "_database_switch__",
@@ -242,8 +245,8 @@ local function handler_real_nodes(handler, result)
         action_2 = edit_action,
         -- remove connection
         action_3 = delete_action,
-        lazy_children = function()
-          return connection_nodes(handler, conn, result)
+        lazy_children = function(refresh)
+          return connection_nodes(handler, conn, result, refresh)
         end,
       } --[[@as DrawerUINode]]
 

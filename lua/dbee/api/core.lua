@@ -122,10 +122,11 @@ function core.connection_execute(id, query)
 end
 
 ---Get database structure of a connection.
----@param id connection_id
+---@param conn ConnectionParams
 ---@return DBStructure[]
-function core.connection_get_structure(id)
-  return state.handler():connection_get_structure(id)
+function core.connection_get_structure(conn)
+  local current_db, _ = core.connection_list_databases(conn.id)
+  return state.handler():connection_get_structure(conn, current_db, false)
 end
 
 ---Get columns of a table

@@ -152,7 +152,7 @@ end
 
 --- Refresh the drawer.
 function ui.drawer_refresh()
-  state.drawer():refresh()
+  state.drawer():refresh(true)
 end
 
 --- Open the drawer UI.
