@@ -105,7 +105,7 @@ func (r *snowflakeDriver) ListDatabases() (current string, available []string, e
 		if err != nil {
 			return "", nil, err
 		}
-		databaseName := row[2].(string)
+		databaseName := row[1].(string)
 		if databaseName == r.config.Database {
 			continue
 		}
