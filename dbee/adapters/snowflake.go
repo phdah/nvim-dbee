@@ -51,6 +51,11 @@ func (r *Snowflake) GetHelpers(opts *core.TableOptions) map[string]string {
 	list := fmt.Sprintf("SELECT * FROM %q.%q LIMIT 100;", opts.Schema, opts.Table)
 	out := map[string]string{
 		"List": list,
+		"Columns": fmt.Sprintf(`SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE TABLE_NAME = '%s' AND TABLE_SCHEMA = '%s'
+			ORDER BY ORDINAL_POSITION`, opts.Table, opts.Schema,
+		),
 	}
 
 	return out
