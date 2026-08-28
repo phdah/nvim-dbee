@@ -159,6 +159,21 @@ function M.random_string()
   return r(10)
 end
 
+-- Splits a query into individual ";"-terminated statements, dropping any
+-- empty/whitespace-only statements (e.g. a trailing "\n" after the last ";").
+---@param query string
+---@return string[]
+function M.split_statements(query)
+  local statements = {}
+  for stmt in (query .. ";"):gmatch("(.-);") do
+    stmt = vim.trim(stmt)
+    if stmt ~= "" then
+      table.insert(statements, stmt)
+    end
+  end
+  return statements
+end
+
 --- Get the SQL statement under the cursor and its range (using treesitter).
 --- Potential returns are 1. the SQL query, 2. empty string, 3. nil if filetype isn't SQL.
 ---@param bufnr integer buffer containing the SQL queries.

@@ -98,6 +98,20 @@ function EditorUI:create_welcome_note()
   return note_id
 end
 
+-- Executes each statement as its own call (so it shows up as its own entry
+-- in the call log), and returns the last call.
+---@param handler Handler
+---@param conn_id connection_id
+---@param query string
+---@return CallDetails?
+local function execute_statements(handler, conn_id, query)
+  local call
+  for _, stmt in ipairs(utils.split_statements(query)) do
+    call = handler:connection_execute(conn_id, stmt)
+  end
+  return call
+end
+
 ---@private
 ---@return table<string, fun()>
 function EditorUI:get_actions()
@@ -114,7 +128,7 @@ function EditorUI:get_actions()
       if not conn then
         return
       end
-      local call = self.handler:connection_execute(conn.id, query)
+      local call = execute_statements(self.handler, conn.id, query)
       self.result:set_call(call)
     end,
     run_selection = function()
@@ -127,7 +141,7 @@ function EditorUI:get_actions()
       if not conn then
         return
       end
-      local call = self.handler:connection_execute(conn.id, query)
+      local call = execute_statements(self.handler, conn.id, query)
       self.result:set_call(call)
     end,
     run_under_cursor = function()
