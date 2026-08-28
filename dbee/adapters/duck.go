@@ -52,9 +52,9 @@ func (d *Duck) Connect(url string) (core.Driver, error) {
 
 func (*Duck) GetHelpers(opts *core.TableOptions) map[string]string {
 	return map[string]string{
-		"List":        fmt.Sprintf("SELECT * FROM %q LIMIT 500", opts.Table),
-		"Columns":     fmt.Sprintf("DESCRIBE %q", opts.Table),
-		"Indexes":     fmt.Sprintf("SELECT * FROM duckdb_indexes() WHERE table_name = '%s'", opts.Table),
-		"Constraints": fmt.Sprintf("SELECT * FROM duckdb_constraints() WHERE table_name = '%s'", opts.Table),
+		"List":        fmt.Sprintf("SELECT * FROM %s LIMIT 500;", opts.Table),
+		"Columns":     fmt.Sprintf("DESCRIBE %q;", opts.Table),
+		"Indexes":     fmt.Sprintf("SELECT * FROM duckdb_indexes() WHERE table_name = '%s';", opts.Table),
+		"Constraints": fmt.Sprintf("SELECT * FROM duckdb_constraints() WHERE table_name = '%s';", opts.Table),
 	}
 }
