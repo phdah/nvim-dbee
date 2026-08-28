@@ -71,7 +71,10 @@ function dbee.execute(query)
     error("no connection currently selected")
   end
 
-  local call = api.core.connection_execute(conn.id, query)
+  local call
+  for _, stmt in ipairs(utils.split_statements(query)) do
+    call = api.core.connection_execute(conn.id, stmt)
+  end
   api.ui.result_set_call(call)
 
   dbee.open()
