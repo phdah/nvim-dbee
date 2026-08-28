@@ -65,7 +65,7 @@ func (r *Snowflake) Connect(rawURL string) (core.Driver, error) {
 }
 
 func (r *Snowflake) GetHelpers(opts *core.TableOptions) map[string]string {
-	list := fmt.Sprintf("SELECT * FROM %s.%s LIMIT 100;", opts.Schema, opts.Table)
+	list := fmt.Sprintf("SELECT * FROM %s.%s LIMIT 500;", opts.Schema, opts.Table)
 	grants := fmt.Sprintf("show grants on %s.%s;", opts.Schema, opts.Table)
 	ddl := fmt.Sprintf("SELECT GET_DDL('TABLE', '%s.%s') as DDL;", opts.Schema, opts.Table)
 	out := map[string]string{
@@ -75,7 +75,7 @@ func (r *Snowflake) GetHelpers(opts *core.TableOptions) map[string]string {
 		"Columns": fmt.Sprintf(`SELECT *
 			FROM INFORMATION_SCHEMA.COLUMNS
 			WHERE TABLE_NAME = '%s' AND TABLE_SCHEMA = '%s'
-			ORDER BY ORDINAL_POSITION`, opts.Table, opts.Schema,
+			ORDER BY ORDINAL_POSITION;`, opts.Table, opts.Schema,
 		),
 	}
 
