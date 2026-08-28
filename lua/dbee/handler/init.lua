@@ -187,6 +187,7 @@ function Handler:connection_get_helpers(id, opts)
   local helpers = vim.fn.DbeeConnectionGetHelpers(id, {
     table = opts.table,
     schema = opts.schema,
+    database = opts.database,
     materialization = opts.materialization,
   })
   if not helpers or helpers == vim.NIL then
@@ -260,7 +261,7 @@ function Handler:connection_get_structure(conn, current_db, refresh)
 end
 
 ---@param id connection_id
----@param opts { table: string, schema: string, materialization: string }
+---@param opts { table: string, schema: string, database: string, materialization: string }
 ---@return Column[]
 function Handler:connection_get_columns(id, opts)
   local out = vim.fn.DbeeConnectionGetColumns(id, opts)

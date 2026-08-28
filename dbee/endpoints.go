@@ -63,6 +63,7 @@ func mountEndpoints(p *plugin.Plugin, h *handler.Handler) {
 			Opts *struct {
 				Table           string `msgpack:"table"`
 				Schema          string `msgpack:"schema"`
+				Database        string `msgpack:"database"`
 				Materialization string `msgpack:"materialization"`
 			}
 		},
@@ -70,6 +71,7 @@ func mountEndpoints(p *plugin.Plugin, h *handler.Handler) {
 			return h.ConnectionGetHelpers(core.ConnectionID(args.ID), &core.TableOptions{
 				Table:           args.Opts.Table,
 				Schema:          args.Opts.Schema,
+				Database:        args.Opts.Database,
 				Materialization: core.StructureTypeFromString(args.Opts.Materialization),
 			})
 		})
@@ -136,6 +138,7 @@ func mountEndpoints(p *plugin.Plugin, h *handler.Handler) {
 		Opts *struct {
 			Table           string `msgpack:"table"`
 			Schema          string `msgpack:"schema"`
+			Database        string `msgpack:"database"`
 			Materialization string `msgpack:"materialization"`
 		}
 	},
@@ -143,6 +146,7 @@ func mountEndpoints(p *plugin.Plugin, h *handler.Handler) {
 		cols, err := h.ConnectionGetColumns(args.ID, &core.TableOptions{
 			Table:           args.Opts.Table,
 			Schema:          args.Opts.Schema,
+			Database:        args.Opts.Database,
 			Materialization: core.StructureTypeFromString(args.Opts.Materialization),
 		})
 		return handler.WrapColumns(cols), err

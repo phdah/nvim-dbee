@@ -16,6 +16,7 @@ var ErrDatabaseSwitchingNotSupported = errors.New("database switching not suppor
 type TableOptions struct {
 	Table           string
 	Schema          string
+	Database        string
 	Materialization StructureType
 }
 

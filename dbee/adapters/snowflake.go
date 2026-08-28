@@ -65,9 +65,14 @@ func (r *Snowflake) Connect(rawURL string) (core.Driver, error) {
 }
 
 func (r *Snowflake) GetHelpers(opts *core.TableOptions) map[string]string {
-	list := fmt.Sprintf("SELECT * FROM %s.%s LIMIT 500;", opts.Schema, opts.Table)
-	grants := fmt.Sprintf("show grants on %s.%s;", opts.Schema, opts.Table)
-	ddl := fmt.Sprintf("SELECT GET_DDL('TABLE', '%s.%s') as DDL;", opts.Schema, opts.Table)
+	qualifiedTable := fmt.Sprintf("%s.%s", opts.Schema, opts.Table)
+	if opts.Database != "" {
+		qualifiedTable = fmt.Sprintf("%s.%s.%s", opts.Database, opts.Schema, opts.Table)
+	}
+
+	list := fmt.Sprintf("SELECT * FROM %s LIMIT 500;", qualifiedTable)
+	grants := fmt.Sprintf("show grants on %s;", qualifiedTable)
+	ddl := fmt.Sprintf("SELECT GET_DDL('TABLE', '%s') as DDL;", qualifiedTable)
 	out := map[string]string{
 		"List":   list,
 		"Grants": grants,
