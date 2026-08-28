@@ -54,6 +54,11 @@ func (p *Postgres) Connect(url string) (core.Driver, error) {
 }
 
 func (*Postgres) GetHelpers(opts *core.TableOptions) map[string]string {
+	qualifiedTable := fmt.Sprintf("%s.%s", opts.Schema, opts.Table)
+	if opts.Database != "" {
+		qualifiedTable = fmt.Sprintf("%s.%s.%s", opts.Database, opts.Schema, opts.Table)
+	}
+
 	basicConstraintQuery := `
 	SELECT tc.constraint_name, tc.table_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name, rc.update_rule, rc.delete_rule
 	FROM
@@ -67,7 +72,7 @@ func (*Postgres) GetHelpers(opts *core.TableOptions) map[string]string {
 	`
 
 	return map[string]string{
-		"List":    fmt.Sprintf("SELECT * FROM %s.%s LIMIT 500;", opts.Schema, opts.Table),
+		"List":    fmt.Sprintf("SELECT * FROM %s LIMIT 500;", qualifiedTable),
 		"Columns": fmt.Sprintf("SELECT * FROM information_schema.columns WHERE table_name='%s' AND table_schema='%s';", opts.Table, opts.Schema),
 		"Indexes": fmt.Sprintf("SELECT * FROM pg_indexes WHERE tablename='%s' AND schemaname='%s';", opts.Table, opts.Schema),
 		"Foreign Keys": fmt.Sprintf("%s WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name = '%s' AND tc.table_schema = '%s';",

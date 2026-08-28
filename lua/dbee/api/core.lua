@@ -131,7 +131,7 @@ end
 
 ---Get columns of a table
 ---@param id connection_id
----@param opts { table: string, schema: string, materialization: string }
+---@param opts { table: string, schema: string, database: string, materialization: string }
 ---@return Column[]
 function core.connection_get_columns(id, opts)
   return state.handler():connection_get_columns(id, opts)

@@ -23,6 +23,7 @@
 ---@class TableOpts
 ---@field table string
 ---@field schema string
+---@field database string
 ---@field materialization materialization
 
 ---Table helpers queries by name.

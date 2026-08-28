@@ -31,6 +31,9 @@ end
 ---@param refresh boolean
 ---@return DrawerUINode[]
 local function connection_nodes(handler, conn, result, refresh)
+  -- get database info
+  local current_db, available_dbs = handler:connection_list_databases(conn.id) -- Make it persistant HERE
+
   ---@param structs DBStructure[]
   ---@param parent_id string
   ---@return DrawerUINode[]
@@ -56,7 +59,8 @@ local function connection_nodes(handler, conn, result, refresh)
       }, to_tree_nodes(struct.children, node_id)) --[[@as DrawerUINode]]
 
       if struct.type == "table" or struct.type == "view" then
-        local table_opts = { table = struct.name, schema = struct.schema, materialization = struct.type }
+        local table_opts =
+          { table = struct.name, schema = struct.schema, database = current_db, materialization = struct.type }
 
         -- table helpers
         node.action_1 = function(cb, select)
@@ -88,9 +92,6 @@ local function connection_nodes(handler, conn, result, refresh)
 
     return nodes
   end
-
-  -- get database info
-  local current_db, available_dbs = handler:connection_list_databases(conn.id) -- Make it persistant HERE
 
   -- recursively parse structure to drawer nodes
   local nodes = to_tree_nodes(handler:connection_get_structure(conn, current_db, refresh), conn.id)
