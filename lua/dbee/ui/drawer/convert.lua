@@ -145,6 +145,7 @@ local function handler_real_nodes(handler, result)
               { key = "name" },
               { key = "type" },
               { key = "url" },
+              { key = "port_forward" },
             }
             common.float_prompt(prompt, {
               title = "Add Connection",
@@ -153,6 +154,7 @@ local function handler_real_nodes(handler, result)
                   name = res.name,
                   url = res.url,
                   type = res.type,
+                  port_forward = res.port_forward,
                 }
                 pcall(handler.source_add_connection, handler, source_id, spec)
                 cb()
@@ -195,10 +197,14 @@ local function handler_real_nodes(handler, result)
           if not original_details then
             return
           end
+          -- port_forward is a lua-only field that the go backend doesn't
+          -- know about, so it has to be read from the raw source spec
+          local original_spec = handler:connection_get_spec(conn.id)
           local prompt = {
             { key = "name", value = original_details.name },
             { key = "type", value = original_details.type },
             { key = "url", value = original_details.url },
+            { key = "port_forward", value = original_spec and original_spec.port_forward },
           }
           common.float_prompt(prompt, {
             title = "Edit Connection",
@@ -207,6 +213,7 @@ local function handler_real_nodes(handler, result)
                 name = res.name,
                 url = res.url,
                 type = res.type,
+                port_forward = res.port_forward,
               }
               pcall(handler.source_update_connection, handler, source_id, conn.id, spec)
               cb()

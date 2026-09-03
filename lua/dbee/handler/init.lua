@@ -1,10 +1,13 @@
 local event_bus = require("dbee.handler.__events")
 local utils = require("dbee.utils")
+local PortForward = require("dbee.handler.port_forward")
 
 -- Handler is an aggregator of connections
 ---@class Handler
 ---@field private sources table<source_id, Source>
 ---@field private source_conn_lookup table<source_id, connection_id[]>
+---@field private source_conn_specs table<connection_id, ConnectionParams>
+---@field private port_forward PortForward
 local Handler = {}
 
 ---@param sources? Source[]
@@ -14,6 +17,8 @@ function Handler:new(sources)
   local o = {
     sources = {},
     source_conn_lookup = {},
+    source_conn_specs = {},
+    port_forward = PortForward:new(),
   }
   setmetatable(o, self)
   self.__index = self
@@ -26,6 +31,20 @@ function Handler:new(sources)
       utils.log("error", "failed registering source: " .. source:name() .. " " .. mes, "core")
     end
   end
+
+  -- keep the active connection's port-forward (if any) running and switch it
+  -- whenever the current connection changes
+  o:register_event_listener("current_connection_changed", function(data)
+    local spec = o.source_conn_specs[data.conn_id]
+    o.port_forward:switch_debounced(data.conn_id, spec and spec.port_forward)
+  end)
+
+  -- safety net in case the plugin never gets a chance to close cleanly
+  utils.create_singleton_autocmd({ "VimLeavePre" }, {
+    callback = function()
+      o.port_forward:stop()
+    end,
+  })
 
   return o
 end
@@ -68,6 +87,7 @@ function Handler:source_reload(id)
   -- close old connections
   for _, c in ipairs(self:source_get_connections(id)) do
     pcall(vim.fn.DbeeDeleteConnection, c.id)
+    self.source_conn_specs[c.id] = nil
   end
 
   -- create new ones
@@ -81,6 +101,9 @@ function Handler:source_reload(id)
 
     local conn_id = vim.fn.DbeeCreateConnection(spec)
     table.insert(self.source_conn_lookup[id], conn_id)
+    -- keep the raw spec around (e.g. for the "port_forward" field, which the
+    -- go backend doesn't know about and won't hand back via get_params)
+    self.source_conn_specs[conn_id] = spec
   end
 end
 
@@ -211,6 +234,38 @@ function Handler:set_current_connection(id)
   vim.fn.DbeeSetCurrentConnection(id)
 end
 
+-- Stop the currently running port-forward job (if any).
+-- Used when the dbee UI is closed.
+function Handler:pause_port_forward()
+  self.port_forward:stop()
+end
+
+-- (Re)start the port-forward job for the current connection, if it defines
+-- one and it isn't already running. Used when the dbee UI is opened.
+function Handler:resume_port_forward()
+  local conn = self:get_current_connection()
+  if not conn then
+    return
+  end
+
+  local spec = self.source_conn_specs[conn.id]
+  self.port_forward:switch(conn.id, spec and spec.port_forward)
+end
+
+-- Current port-forward status, or nil if nothing is running.
+---@return { conn_id: connection_id, conn_name: string?, cmd: string, pid: integer }?
+function Handler:port_forward_status()
+  local status = self.port_forward:status()
+  if not status then
+    return nil
+  end
+
+  local spec = self.source_conn_specs[status.conn_id]
+  status.conn_name = spec and spec.name
+
+  return status
+end
+
 ---@param id connection_id
 ---@param query string
 ---@return CallDetails
@@ -270,6 +325,16 @@ function Handler:connection_get_columns(id, opts)
   end
 
   return out
+end
+
+-- Get the raw connection spec as loaded from its source (i.e. before it goes
+-- through the go backend), which keeps lua-only fields such as
+-- "port_forward" that the go backend doesn't know about and won't hand back
+-- via connection_get_params().
+---@param id connection_id
+---@return ConnectionParams?
+function Handler:connection_get_spec(id)
+  return self.source_conn_specs[id]
 end
 
 ---@param id connection_id

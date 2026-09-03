@@ -172,6 +172,7 @@ function sources.FileSource:update(id, details)
       ex.name = details.name
       ex.url = details.url
       ex.type = details.type
+      ex.port_forward = details.port_forward
     end
   end
 

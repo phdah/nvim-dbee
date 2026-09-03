@@ -20,6 +20,24 @@ local commands = {
 
     require("dbee").store(args[1], args[2], { extra_arg = args[3] })
   end,
+  port_forward = function()
+    local status = require("dbee").api.core.get_port_forward_status()
+    if not status then
+      vim.notify("no port-forward currently running", vim.log.levels.INFO, { title = "nvim-dbee" })
+      return
+    end
+
+    vim.notify(
+      string.format(
+        "running for %q (pid %d):\n%s",
+        status.conn_name or status.conn_id,
+        status.pid,
+        status.cmd
+      ),
+      vim.log.levels.INFO,
+      { title = "nvim-dbee" }
+    )
+  end,
 }
 
 ---@param args string args in form of Dbee arg1 arg2 ...

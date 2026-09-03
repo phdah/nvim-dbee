@@ -73,6 +73,7 @@
 ---@field name string
 ---@field type string
 ---@field url string
+---@field port_forward string? optional shell command kept running in the background while this is the active connection (lua-only, not sent to the go backend)
 
 ---@divider -
 ---@tag dbee.ref.types.structure

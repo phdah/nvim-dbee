@@ -113,6 +113,22 @@ function core.set_current_connection(id)
   state.handler():set_current_connection(id)
 end
 
+---Stop the current connection's port-forward job (if any).
+function core.pause_port_forward()
+  state.handler():pause_port_forward()
+end
+
+---(Re)start the current connection's port-forward job (if any and not already running).
+function core.resume_port_forward()
+  state.handler():resume_port_forward()
+end
+
+---Get the currently running port-forward job's status, or nil if none is running.
+---@return { conn_id: connection_id, conn_name: string?, cmd: string, pid: integer }|nil
+function core.get_port_forward_status()
+  return state.handler():port_forward_status()
+end
+
 ---Execute a query on a connection.
 ---@param id connection_id
 ---@param query string
@@ -142,6 +158,14 @@ end
 ---@return ConnectionParams|nil
 function core.connection_get_params(id)
   return state.handler():connection_get_params(id)
+end
+
+---Get the raw connection spec as loaded from its source, including lua-only
+---fields (e.g. "port_forward") that the go backend doesn't know about.
+---@param id connection_id
+---@return ConnectionParams|nil
+function core.connection_get_spec(id)
+  return state.handler():connection_get_spec(id)
 end
 
 ---List databases of a connection.
