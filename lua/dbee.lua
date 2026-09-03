@@ -41,6 +41,8 @@ end
 
 ---Open dbee UI. If already opened, reset window layout.
 function dbee.open()
+  api.core.resume_port_forward()
+
   if api.current_config().window_layout:is_open() then
     return api.current_config().window_layout:reset()
   end
@@ -53,6 +55,7 @@ function dbee.close()
     return
   end
   api.current_config().window_layout:close()
+  api.core.pause_port_forward()
 end
 
 ---Check if dbee UI is open or not.

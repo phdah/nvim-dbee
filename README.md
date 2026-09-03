@@ -293,8 +293,19 @@ like:
   name = "My Database",
   type = "sqlite", -- type of database driver
   url = "~/path/to/mydb.db",
+  port_forward = "kubectl --context my-context port-forward pod/my-pod 5432:5432", -- optional, see below
 }
 ```
+
+If a connection defines `port_forward`, that shell command is run as a background job while the
+connection is the active one: it's started when the connection becomes active, and stopped as soon
+as you switch to another connection or close dbee. This makes it easy to reuse the same local port
+for multiple connections (e.g. all postgres connections forwarding to `5432`), since only one
+port-forward job ever runs at a time.
+
+Starting/stopping a port-forward job is logged (`:messages` or your `vim.notify` handler). To check
+what's currently running (connection, pid and command) at any time, run `:Dbee port_forward` or call
+`require("dbee").api.core.get_port_forward_status()`.
 
 The connections are loaded to dbee using so-called "sources". They can be added to dbee using the
 `setup()` function:
